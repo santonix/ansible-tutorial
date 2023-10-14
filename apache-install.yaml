@@ -1,19 +1,35 @@
 ---
-- name: Install Apache2
-  hosts: server1  # Replace with the hostname or IP address of your target server
-  become: yes  # This allows the playbook to run with sudo (root) privileges
-
+- hosts: all
+  become: true
   tasks:
-    - name: Update APT package cache
-      apt:
-        update_cache: yes
-      when: ansible_distribution == 'Ubuntu'  # Check if the target system is Ubuntu
 
-    - name: Install Apache2
-      apt:
-        name: apache2
-        state: present
-      when: ansible_distribution == 'Ubuntu'  # Install Apache2 only on Ubuntu-based systems
+  - name: update repo index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == 'ubuntu'  # check if the target system is ubuntu...
 
-    
+  - name: install apache2 package and php
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'ubuntu'  # install apache2  only on ubuntu-based systems...  
+
+   
+
+  - name: update repo index
+    dnf:
+      update_cache: yes
+    when: ansible_distribution == 'centos'  # check if the target system is centos...
+
+  - name: install apache2 package and php for centos
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'centos'  # install apache2  only on centos-based systems...  
 

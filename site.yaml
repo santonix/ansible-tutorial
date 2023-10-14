@@ -1,0 +1,92 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: install updates (centos)
+      tags: update,centos
+      dnf:
+        update_only: yes
+        update_cache: yes
+      when: ansible_distribution == "centos"  
+
+    - name: install updates (ubuntu)
+      tags: update,ubuntu  
+      apt:
+        update_only: yes
+        update_cache: yes
+      when: ansible_distribution == "ubuntu"    
+
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache  and php
+    tags: apache,php,web_server,ubuntu
+    apt:
+      name: 
+        - apache2
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'ubuntu'  # install apache2  only on ubuntu-based systems...  
+
+   
+
+  - name: update httpd and php for centos
+    tags: update,httpd,php,centos
+    dnf:
+      update_cache: yes
+    when: ansible_distribution == 'centos'  # check if the target system is centos...
+
+  - name: install apache2 package and php for centos
+    tags: apache,php,centos
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'centos'  # install httpd  only on centos-based systems...  
+
+
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+
+- hosts: db_servers
+  become: true
+  tasks:
+  - name: install mariadb package (centos)
+    tags: mariadb,centos
+    dnf:
+      name: mariadb
+      state: latest
+    when: ansible_distribution == "centos"
+
+  - name: install mariadb package (ubuntu)
+    tags: mariadb,ubuntu,db_servers
+    apt:
+      name: mariadb_server
+      state: latest
+    when: ansible_distribution == "ubuntu"     
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba,package
+    package:
+      name: samba
+      state: latest
+
+
+
+ 
